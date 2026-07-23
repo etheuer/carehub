@@ -14,6 +14,10 @@
   --danger: #b3261e;
   --danger-bg: #fdecea;
   --danger-border: #f0b4ae;
+  --ok: #0a7d34;
+  --ok-bg: #e6f4ea;
+  --warn-ink: #8a5300;
+  --warn-bg: #fdf0d5;
   --border: #d9def0;
   --focus: #1b6ef3;
   --radius: 14px;
@@ -35,6 +39,10 @@
     --danger: #ff9a90;
     --danger-bg: #3a1815;
     --danger-border: #7a3730;
+    --ok: #6fdc95;
+    --ok-bg: #12331f;
+    --warn-ink: #ffcf7a;
+    --warn-bg: #3a2c10;
     --border: #2c3563;
     --focus: #8ea2ff;
   }
@@ -266,6 +274,52 @@ button { font: inherit; }
   max-width: calc(100vw - 2rem);
 }
 .toast--show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---------- Rotina: navegação de dia ---------- */
+.daynav { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+.daynav__label {
+  flex: 1; min-height: var(--tap); border: 1px solid var(--border); background: var(--surface);
+  color: var(--text); border-radius: 12px; font-weight: 700; font-size: 1.05rem; cursor: pointer;
+}
+.report-card { border-left: 4px solid var(--primary); }
+
+/* ---------- Timeline ---------- */
+.now-divider { display: flex; align-items: center; gap: 0.6rem; margin: 0.6rem 0; color: var(--primary); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+.now-divider::before, .now-divider::after { content: ""; flex: 1; height: 2px; background: var(--primary); opacity: 0.5; }
+.feed { margin-bottom: 0.6rem; }
+.feed--note { border-left: 4px solid var(--text-muted); }
+
+.chip {
+  display: inline-flex; align-items: center; gap: 0.25rem; white-space: nowrap;
+  font-size: 0.78rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 999px; border: 1.5px solid;
+}
+.chip--ok { color: var(--ok); border-color: var(--ok); background: var(--ok-bg); }
+.chip--ok::before { content: "✓"; }
+.chip--warn { color: var(--warn-ink); border-color: var(--warn-ink); background: var(--warn-bg); }
+.chip--warn::before { content: "!"; font-weight: 800; }
+.chip--muted { color: var(--text-muted); border-color: var(--border); }
+.chip--muted::before { content: "○"; }
+.chip--soft { color: var(--primary); border-color: var(--border); background: var(--surface-2); }
+.chip--soft::before { content: "◷"; }
+
+/* ---------- Segmented control ---------- */
+.seg { display: flex; gap: 0.5rem; margin-bottom: 0.9rem; }
+.seg__btn {
+  flex: 1; min-height: var(--tap); border: 1.5px solid var(--border); background: var(--surface);
+  color: var(--text); border-radius: 12px; font-weight: 650; cursor: pointer; padding: 0.4rem;
+}
+.seg__btn[aria-pressed="true"] { background: var(--primary); color: var(--primary-ink); border-color: var(--primary); }
+
+/* ---------- Weekday chips ---------- */
+.wd-row { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.wd-chip {
+  min-width: 2.6rem; min-height: 2.6rem; border: 1.5px solid var(--border); background: var(--surface);
+  color: var(--text); border-radius: 10px; font-weight: 650; cursor: pointer;
+}
+.wd-chip[aria-pressed="true"] { background: var(--primary); color: var(--primary-ink); border-color: var(--primary); }
+
+.add-row { position: sticky; bottom: 0.25rem; margin-top: 1.25rem; }
+hr.rule { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
 
 /* ---------- Tab bar ---------- */
 .tabbar {

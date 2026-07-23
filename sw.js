@@ -1,7 +1,7 @@
 /* Care Hub — offline app shell (R1-06).
  * Caches the static shell so the emergency surface opens with no connection.
  * The care data itself lives in localStorage, which is always available offline. */
-const CACHE = "carehub-shell-v3";
+const CACHE = "carehub-shell-v4";
 const SHELL = [
   "./",
   "./index.html",
