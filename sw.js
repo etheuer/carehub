@@ -1,7 +1,11 @@
-/* Care Hub — offline app shell (R1-06).
- * Caches the static shell so the emergency surface opens with no connection.
- * The care data itself lives in localStorage, which is always available offline. */
-const CACHE = "carehub-shell-v4";
+/* Care Hub — service worker (R1-06 offline + reliable updates).
+ *
+ * NETWORK-FIRST: when online, always fetch the latest and refresh the cache;
+ * only fall back to the cache when there is no connection. This keeps the
+ * emergency content available offline while making updates land immediately —
+ * cache-first was leaving installed iOS home-screen apps stuck on old versions.
+ */
+const CACHE = "carehub-shell-v6";
 const SHELL = [
   "./",
   "./index.html",
@@ -19,30 +23,22 @@ self.addEventListener("install", (e) => {
 
 self.addEventListener("activate", (e) => {
   e.waitUntil(
-    caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+    caches.keys()
+      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
 
-// Cache-first for the shell; network-fallback keeps it fresh when online.
 self.addEventListener("fetch", (e) => {
-  if (e.request.method !== "GET") return;
+  const req = e.request;
+  if (req.method !== "GET") return;
+  if (new URL(req.url).origin !== self.location.origin) return;
   e.respondWith(
-    caches.match(e.request).then((hit) => {
-      if (hit) {
-        // Revalidate in the background so the next open is up to date.
-        fetch(e.request).then((res) => {
-          if (res && res.ok) caches.open(CACHE).then((c) => c.put(e.request, res.clone()));
-        }).catch(() => {});
-        return hit;
-      }
-      return fetch(e.request).then((res) => {
-        if (res && res.ok && e.request.url.startsWith(self.location.origin)) {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(e.request, copy));
-        }
+    fetch(req)
+      .then((res) => {
+        if (res && res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); }
         return res;
-      }).catch(() => caches.match("./index.html"));
-    })
+      })
+      .catch(() => caches.match(req).then((hit) => hit || (req.mode === "navigate" ? caches.match("./index.html") : undefined)))
   );
 });

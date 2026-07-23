@@ -149,6 +149,9 @@
   const findMedEv = (medId, dayKey, time) => state.medEvents.find((e) => e.medId === medId && e.dateKey === dayKey && e.time === time);
   const findTaskEv = (taskId, dayKey, time) => state.taskEvents.find((e) => e.taskId === taskId && e.dateKey === dayKey && e.time === time);
   const lastPrn = (medId) => state.medEvents.filter((e) => e.medId === medId && e.time === null).sort((a, b) => new Date(b.at) - new Date(a.at))[0];
+  // Uma ocorrência está no futuro se o dia é posterior a hoje, ou é hoje e a hora
+  // ainda não chegou. Não se registra o que ainda não aconteceu.
+  function isFutureOcc(dayKey, time) { const t = keyOf(new Date()); return dayKey > t || (dayKey === t && time > nowHHMM()); }
 
   function feedFor(dayKey) {
     const wd = weekdayOf(dayKey), rows = [];
@@ -183,8 +186,8 @@
       rep && rep.body ? el("p", { class: "item__body" }, rep.body) : el("p", { class: "item__body muted-none" }, "Toque para escrever o relatório do dia"),
       rep && rep.body ? el("p", { class: "item__meta" }, `${sinceText(rep.at)} · ${rep.by || ""}`) : null));
 
-    // Se precisar (SOS)
-    if (prnMeds().length) {
+    // Se precisar (SOS) — só faz sentido "agora", então aparece apenas no dia de hoje.
+    if (viewedDay === keyOf(new Date()) && prnMeds().length) {
       main.appendChild(el("p", { class: "reviewed", style: "margin-top:1.2rem" }, el("span", {}, "Se precisar (SOS)")));
       prnMeds().forEach((m) => {
         const last = lastPrn(m.id);
@@ -241,15 +244,18 @@
     const isMed = r.kind === "med";
     const label = isMed ? `💊 ${r.med.name}${r.med.dose ? " " + r.med.dose : ""}` : `✓ ${r.task.title}`;
     const status = outcomeChip(r, isMed);
-    return el("button", { class: "item feed", style: "display:block;width:100%;text-align:left;cursor:pointer",
-      onclick: () => (isMed ? recordDose(r.med, viewedDay, r.time, r.ev) : recordTask(r.task, viewedDay, r.time, r.ev)) },
-      el("div", { class: "row" },
-        el("div", { class: "row__main" },
-          el("p", { class: "item__meta", style: "margin:0" }, r.time),
-          el("p", { class: "item__label" }, label),
-          (isMed ? r.med.howTo : r.task.howTo) ? el("p", { class: "item__meta" }, isMed ? r.med.howTo : r.task.howTo) : null,
-          r.ev && r.ev.note ? el("p", { class: "item__meta" }, "“" + r.ev.note + "”") : null),
-        el("div", { style: "flex:none" }, status)));
+    const future = isFutureOcc(viewedDay, r.time);
+    const interactive = !future || !!r.ev; // futuro sem registro não é registrável
+    const inner = el("div", { class: "row" },
+      el("div", { class: "row__main" },
+        el("p", { class: "item__meta", style: "margin:0" }, r.time + (future ? " · ainda não chegou" : "")),
+        el("p", { class: "item__label" }, label),
+        (isMed ? r.med.howTo : r.task.howTo) ? el("p", { class: "item__meta" }, isMed ? r.med.howTo : r.task.howTo) : null,
+        r.ev && r.ev.note ? el("p", { class: "item__meta" }, "“" + r.ev.note + "”") : null),
+      el("div", { style: "flex:none" }, status));
+    if (interactive) return el("button", { class: "item feed", style: "display:block;width:100%;text-align:left;cursor:pointer",
+      onclick: () => (isMed ? recordDose(r.med, viewedDay, r.time, r.ev) : recordTask(r.task, viewedDay, r.time, r.ev)) }, inner);
+    return el("div", { class: "item feed", style: "opacity:0.65" }, inner);
   }
 
   function outcomeChip(r, isMed) {
@@ -264,10 +270,16 @@
   function chip(text, kind) { return el("span", { class: "chip chip--" + kind }, text); }
 
   // ---------- Registrar dose / tarefa ----------
-  function recordDose(med, dayKey, time, ev) { recordOutcome({ title: `${med.name}${med.dose ? " " + med.dose : ""} · ${time}`, opts: [["given", "Dado"], ["notGiven", "Não dado"]], ev,
-    onSave: (outcome, note) => upsertMedEvent(med.id, dayKey, time, outcome, note), onClear: ev ? () => removeMedEvent(ev) : null }); }
-  function recordTask(task, dayKey, time, ev) { recordOutcome({ title: `${task.title} · ${time}`, opts: [["done", "Feita"], ["notDone", "Não feita"]], ev,
-    onSave: (outcome, note) => upsertTaskEvent(task.id, dayKey, time, outcome, note), onClear: ev ? () => removeTaskEvent(ev) : null }); }
+  function recordDose(med, dayKey, time, ev) {
+    if (!ev && isFutureOcc(dayKey, time)) { toast("Ainda não chegou a hora desta dose"); return; }
+    recordOutcome({ title: `${med.name}${med.dose ? " " + med.dose : ""} · ${time}`, opts: [["given", "Dado"], ["notGiven", "Não dado"]], ev,
+      onSave: (outcome, note) => upsertMedEvent(med.id, dayKey, time, outcome, note), onClear: ev ? () => removeMedEvent(ev) : null });
+  }
+  function recordTask(task, dayKey, time, ev) {
+    if (!ev && isFutureOcc(dayKey, time)) { toast("Ainda não chegou a hora desta tarefa"); return; }
+    recordOutcome({ title: `${task.title} · ${time}`, opts: [["done", "Feita"], ["notDone", "Não feita"]], ev,
+      onSave: (outcome, note) => upsertTaskEvent(task.id, dayKey, time, outcome, note), onClear: ev ? () => removeTaskEvent(ev) : null });
+  }
 
   async function recordOutcome({ title, opts, ev, onSave, onClear }) {
     if (!(await ensureName())) return;
@@ -528,6 +540,18 @@
     }
     main.appendChild(el("button", { class: "btn btn--ghost btn--block", style: "margin-top:0.6rem", onclick: () => editCardEntry() }, "＋ Adicionar outro item"));
 
+    // Medicamentos em uso — referência para uma emergência (só leitura; cadastro é na Rotina).
+    main.appendChild(el("div", { class: "section-head", style: "margin-top:2rem" }, el("h2", {}, "Medicamentos em uso")));
+    const meds = activeMeds();
+    if (!meds.length) {
+      main.appendChild(el("div", { class: "empty" }, el("strong", {}, "Nenhum medicamento cadastrado"), el("span", {}, "Adicione na aba Rotina — eles aparecem aqui automaticamente.")));
+    } else {
+      meds.forEach((m) => main.appendChild(el("div", { class: "item" },
+        el("p", { class: "item__label" }, `${m.name}${m.dose ? " " + m.dose : ""}`),
+        el("p", { class: "item__meta" }, scheduleSummary(m)),
+        m.howTo ? el("p", { class: "item__meta" }, m.howTo) : null)));
+    }
+
     main.appendChild(el("div", { class: "section-head", style: "margin-top:2rem" },
       el("h2", {}, "Contatos de emergência"),
       el("button", { class: "icon-btn icon-btn--bordered", "aria-label": "Adicionar contato", onclick: () => editContact() }, "＋")));
@@ -584,7 +608,11 @@
     const isNew = !c; const data = c || { id: uid(), name: "", role: "", phone: "", whatsapp: false };
     const name = field("Nome", "text", data.name, "");
     const role = field("Função ou relação", "text", data.role, "ex.: Hospice, Filha, Clínico");
-    const phone = field("Telefone", "tel", data.phone, "Com DDD. Para WhatsApp, inclua o país (ex.: +55).");
+    const phone = field("Telefone", "tel", data.phone, "Com DDD. Para WhatsApp, inclua o país (ex.: +55). Confira o número após preencher.");
+    // autocomplete="tel" faz o iOS usar o Preenchimento estruturado (que insere o
+    // número inteiro) em vez do heurístico, que come o primeiro dígito.
+    phone.input.setAttribute("autocomplete", "tel");
+    phone.input.setAttribute("name", "tel");
     const wa = checkField("Também tem WhatsApp neste número", data.whatsapp);
     const err = el("p", { class: "field-error", hidden: true });
     openModal(isNew ? "Adicionar contato" : "Editar contato", [name.wrap, role.wrap, phone.wrap, wa.wrap, err], {
