@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <!-- No maximum-scale/user-scalable lock: text must be zoomable to 200% (R1-17). -->
+    <!-- No maximum-scale/user-scalable lock: text must be zoomable to 200%. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#2f3bd6" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0d1330" media="(prefers-color-scheme: dark)" />
@@ -16,9 +16,9 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <a class="skip-link" href="#main">Skip to content</a>
+    <a class="skip-link" href="#main">Ir para o conteúdo</a>
 
-    <!-- Offline / freshness banner (R1-06) -->
+    <!-- Offline / freshness banner -->
     <div id="net-banner" class="net-banner" hidden role="status"></div>
 
     <header class="app-header">
@@ -26,37 +26,35 @@
         <span class="app-mark" aria-hidden="true"></span>
         <div>
           <h1>Care Hub</h1>
-          <p id="header-sub" class="app-header__sub">Emergency &amp; care information</p>
+          <p id="header-sub" class="app-header__sub">Emergência e cuidados</p>
         </div>
       </div>
-      <button id="menu-btn" class="icon-btn" aria-label="Settings and options" aria-haspopup="dialog">
+      <button id="menu-btn" class="icon-btn" aria-label="Configurações e opções" aria-haspopup="dialog">
         <span aria-hidden="true">⚙</span>
       </button>
     </header>
 
     <main id="main" tabindex="-1" class="view"></main>
 
-    <nav class="tabbar" aria-label="Main sections">
-      <button class="tab" data-view="card" aria-current="page">
+    <nav class="tabbar" aria-label="Seções principais">
+      <button class="tab" data-view="emergency" aria-current="page">
         <span class="tab__icon" aria-hidden="true">✚</span>
-        <span class="tab__label">Card</span>
-      </button>
-      <button class="tab" data-view="contacts">
-        <span class="tab__icon" aria-hidden="true">☎</span>
-        <span class="tab__label">Contacts</span>
+        <span class="tab__label">Emergência</span>
       </button>
       <button class="tab" data-view="checklists">
         <span class="tab__icon" aria-hidden="true">☑</span>
-        <span class="tab__label">Checklists</span>
+        <span class="tab__label">Roteiros</span>
       </button>
       <button class="tab" data-view="profile">
         <span class="tab__icon" aria-hidden="true">☺</span>
-        <span class="tab__label">Profile</span>
+        <span class="tab__label">Perfil</span>
       </button>
     </nav>
 
     <!-- Generic modal host (name gate, editors, menu) -->
     <div id="modal-root" class="modal-root" hidden></div>
+    <!-- Transient confirmation toast -->
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
     <script src="app.js"></script>
   </body>

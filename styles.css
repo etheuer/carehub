@@ -247,6 +247,26 @@ button { font: inherit; }
   border-top: 1px solid var(--border); margin-top: 1rem;
 }
 
+/* ---------- Toast (visible confirmation) ---------- */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom) + 5.25rem);
+  transform: translate(-50%, 1rem);
+  z-index: 40;
+  background: #0a7d34;
+  color: #fff;
+  font-weight: 700;
+  padding: 0.7rem 1.1rem;
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+  max-width: calc(100vw - 2rem);
+}
+.toast--show { opacity: 1; transform: translate(-50%, 0); }
+
 /* ---------- Tab bar ---------- */
 .tabbar {
   position: fixed; bottom: 0; left: 0; right: 0; z-index: 20;
