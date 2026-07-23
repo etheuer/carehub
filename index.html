@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- No maximum-scale/user-scalable lock: text must be zoomable to 200% (R1-17). -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#2f3bd6" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0d1330" media="(prefers-color-scheme: dark)" />
+    <title>Care Hub</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Care Hub" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <!-- Offline / freshness banner (R1-06) -->
+    <div id="net-banner" class="net-banner" hidden role="status"></div>
+
+    <header class="app-header">
+      <div class="app-header__title">
+        <span class="app-mark" aria-hidden="true"></span>
+        <div>
+          <h1>Care Hub</h1>
+          <p id="header-sub" class="app-header__sub">Emergency &amp; care information</p>
+        </div>
+      </div>
+      <button id="menu-btn" class="icon-btn" aria-label="Settings and options" aria-haspopup="dialog">
+        <span aria-hidden="true">⚙</span>
+      </button>
+    </header>
+
+    <main id="main" tabindex="-1" class="view"></main>
+
+    <nav class="tabbar" aria-label="Main sections">
+      <button class="tab" data-view="card" aria-current="page">
+        <span class="tab__icon" aria-hidden="true">✚</span>
+        <span class="tab__label">Card</span>
+      </button>
+      <button class="tab" data-view="contacts">
+        <span class="tab__icon" aria-hidden="true">☎</span>
+        <span class="tab__label">Contacts</span>
+      </button>
+      <button class="tab" data-view="checklists">
+        <span class="tab__icon" aria-hidden="true">☑</span>
+        <span class="tab__label">Checklists</span>
+      </button>
+      <button class="tab" data-view="profile">
+        <span class="tab__icon" aria-hidden="true">☺</span>
+        <span class="tab__label">Profile</span>
+      </button>
+    </nav>
+
+    <!-- Generic modal host (name gate, editors, menu) -->
+    <div id="modal-root" class="modal-root" hidden></div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
